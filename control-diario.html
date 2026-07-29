@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control Diario</title>
+<style>
+  :root{
+    --green:#4caf50;
+    --green-dark:#3d8b40;
+    --green-light:#e8f5e9;
+    --orange:#f5871f;
+    --orange-light:#fff2e6;
+    --blue:#2f8fe0;
+    --blue-light:#e8f3fc;
+    --purple:#7c5cff;
+    --purple-light:#f1edff;
+    --text:#1c1e21;
+    --sub:#8a8f98;
+    --bg:#f5f6f8;
+    --card:#ffffff;
+    --border:#eef0f3;
+    --radius:20px;
+    --shadow:0 2px 12px rgba(20,20,30,0.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{
+    max-width:600px;
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    padding-bottom:90px;
+  }
+  @media (min-width:700px){
+    #app{max-width:720px;}
+  }
+
+  /* HEADER */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:20px 20px 6px;
+  }
+  .icon-btn{
+    width:40px;height:40px;
+    border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    background:transparent;
+    border:none;
+    color:var(--text);
+    cursor:pointer;
+  }
+  .icon-btn:hover{background:var(--border);}
+  .title-block{text-align:center;}
+  .title-block h1{font-size:26px;font-weight:700;}
+  .title-block p{font-size:14px;color:var(--sub);margin-top:2px;}
+
+  /* GRID CARDS */
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    padding:16px 20px 4px;
+  }
+  @media (max-width:420px){
+    .grid{grid-template-columns:1fr 1fr;gap:10px;}
+  }
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px;
+    position:relative;
+    overflow:hidden;
+    transition:transform .15s ease;
+  }
+  .card-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .card-icon{
+    width:36px;height:36px;
+    border-radius:11px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;
+    flex-shrink:0;
+  }
+  .card-label{font-size:14px;color:var(--sub);font-weight:600;}
+  .card-value{font-size:26px;font-weight:800;line-height:1;}
+  .card-value .unit{font-size:14px;font-weight:500;color:var(--sub);margin-left:2px;}
+  .card-sub{font-size:12px;color:var(--sub);margin-top:6px;}
+  .bar-track{
+    height:7px;
+    background:var(--border);
+    border-radius:10px;
+    margin-top:10px;
+    overflow:hidden;
+  }
+  .bar-fill{
+    height:100%;
+    border-radius:10px;
+    transition:width .4s ease;
+  }
+  .pct{font-size:11px;font-weight:700;margin-top:6px;}
+  .card.calories .card-icon{background:var(--orange-light);}
+  .card.calories .card-value{color:var(--orange);}
+  .card.calories .bar-fill{background:var(--orange);}
+  .card.calories .pct{color:var(--orange);}
+  .card.weight .card-icon{background:var(--green-light);}
+  .card.water .card-icon{background:var(--blue-light);}
+  .card.water .card-value{color:var(--blue);}
+  .card.water .bar-fill{background:var(--blue);}
+  .card.water .pct{color:var(--blue);}
+  .card.steps .card-icon{background:var(--green-light);}
+  .card.steps .card-value{color:var(--green-dark);}
+  .card.steps .bar-fill{background:var(--green);}
+  .card.steps .pct{color:var(--green-dark);}
+  .card-action{
+    margin-top:10px;
+    font-size:12px;
+    font-weight:700;
+    color:var(--green-dark);
+    background:none;border:none;cursor:pointer;
+    padding:0;
+  }
+  .quick-row{display:flex;gap:8px;margin-top:10px;}
+  .chip-btn{
+    flex:1;
+    border:1px solid var(--border);
+    background:var(--bg);
+    border-radius:10px;
+    padding:6px 4px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    color:var(--text);
+  }
+  .chip-btn:hover{background:var(--border);}
+
+  /* HABITS */
+  .section-card{
+    margin:14px 20px;
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:22px 20px;
+  }
+  .section-title{font-size:18px;font-weight:800;margin-bottom:14px;}
+  .habit-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:12px 0;
+    border-bottom:1px solid var(--border);
+    cursor:pointer;
+    user-select:none;
+  }
+  .habit-row:last-child{border-bottom:none;}
+  .habit-icon{
+    width:34px;height:34px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;
+    font-size:15px;
+    flex-shrink:0;
+  }
+  .habit-name{flex:1;font-size:15px;font-weight:500;}
+  .checkbox{
+    width:24px;height:24px;
+    border-radius:7px;
+    border:2px solid #d7dae0;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .15s ease;
+    flex-shrink:0;
+  }
+  .checkbox.checked{
+    background:var(--green);
+    border-color:var(--green);
+    color:#fff;
+  }
+
+  /* BIG BUTTON */
+  .big-btn{
+    margin:18px 20px;
+    background:var(--green);
+    color:#fff;
+    border:none;
+    border-radius:18px;
+    padding:20px;
+    font-size:17px;
+    font-weight:800;
+    letter-spacing:.3px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    cursor:pointer;
+    box-shadow:0 8px 20px rgba(76,175,80,0.3);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .big-btn:active{transform:scale(.98);}
+  .big-btn.done{background:var(--green-dark);}
+  .big-btn svg{width:22px;height:22px;}
+
+  /* STREAK */
+  .streak-card{
+    margin:0 20px 14px;
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px 20px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .streak-flame{
+    width:56px;height:56px;
+    border-radius:50%;
+    background:#fff3e0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;
+    flex-shrink:0;
+  }
+  .streak-num{font-size:20px;font-weight:800;color:var(--orange);}
+  .streak-sub{font-size:12px;color:var(--sub);}
+  .week-days{
+    display:flex;
+    gap:6px;
+    margin-left:auto;
+  }
+  .day-dot{
+    width:30px;height:30px;
+    border-radius:50%;
+    border:2px solid var(--border);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-size:9px;
+    color:var(--sub);
+    font-weight:600;
+  }
+  .day-dot.on{border-color:var(--green);color:var(--green-dark);background:var(--green-light);}
+
+  /* BOTTOM NAV */
+  .bottom-nav{
+    position:fixed;
+    bottom:0;left:0;right:0;
+    background:#fff;
+    border-top:1px solid var(--border);
+    display:flex;
+    justify-content:center;
+    z-index:50;
+  }
+  .bottom-nav-inner{
+    width:100%;max-width:600px;
+    display:flex;
+  }
+  @media (min-width:700px){.bottom-nav-inner{max-width:720px;}}
+  .nav-btn{
+    flex:1;
+    background:none;border:none;
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:12px 0 10px;
+    color:var(--sub);
+    font-size:11px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .nav-btn.active{color:var(--green-dark);}
+  .nav-btn svg{width:22px;height:22px;}
+
+  .view{display:none;}
+  .view.active{display:block;animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  /* MODAL / SHEET */
+  .overlay{
+    position:fixed;inset:0;
+    background:rgba(20,20,30,0.45);
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:100;
+  }
+  .overlay.active{display:flex;}
+  .sheet{
+    background:#fff;
+    width:100%;max-width:600px;
+    border-radius:24px 24px 0 0;
+    padding:24px 20px 28px;
+    max-height:88vh;
+    overflow-y:auto;
+    animation:slideup .25s ease;
+  }
+  @keyframes slideup{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  .sheet-handle{
+    width:40px;height:4px;background:var(--border);border-radius:4px;
+    margin:0 auto 16px;
+  }
+  .sheet h2{font-size:20px;font-weight:800;margin-bottom:16px;}
+  .field{margin-bottom:14px;}
+  .field label{font-size:13px;font-weight:700;color:var(--sub);display:block;margin-bottom:6px;}
+  .field input, .field select{
+    width:100%;
+    padding:13px 14px;
+    border-radius:12px;
+    border:1.5px solid var(--border);
+    font-size:16px;
+    background:var(--bg);
+    color:var(--text);
+  }
+  .field input:focus, .field select:focus{outline:none;border-color:var(--green);}
+  .field-row{display:flex;gap:10px;}
+  .field-row .field{flex:1;}
+  .btn{
+    width:100%;
+    padding:15px;
+    border-radius:14px;
+    border:none;
+    font-size:15px;
+    font-weight:800;
+    cursor:pointer;
+  }
+  .btn-primary{background:var(--green);color:#fff;}
+  .btn-secondary{background:var(--bg);color:var(--text);border:1.5px solid var(--border);margin-top:8px;}
+  .btn-danger{background:#fdeceb;color:#d9483f;margin-top:8px;}
+
+  .meal-list{margin-bottom:12px;}
+  .meal-item{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;
+  }
+  .meal-item span.k{font-weight:700;color:var(--orange);}
+  .meal-del{background:none;border:none;color:var(--sub);font-size:16px;cursor:pointer;padding:0 4px;}
+
+  /* SUCCESS ANIMATION */
+  .success-overlay{
+    position:fixed;inset:0;
+    background:rgba(76,175,80,0.95);
+    display:none;
+    align-items:center;justify-content:center;
+    flex-direction:column;
+    z-index:200;
+    color:#fff;
+  }
+  .success-overlay.active{display:flex;}
+  .success-check{
+    width:90px;height:90px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.2);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:16px;
+    animation:pop .4s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes pop{0%{transform:scale(0);}70%{transform:scale(1.15);}100%{transform:scale(1);}}
+  .success-overlay h2{font-size:22px;font-weight:800;}
+  .success-overlay p{font-size:14px;opacity:.9;margin-top:6px;}
+
+  /* PROGRESO */
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px;margin-top:14px;}
+  .stat-box{
+    background:var(--card);border-radius:16px;box-shadow:var(--shadow);
+    padding:16px;text-align:center;
+  }
+  .stat-box .num{font-size:22px;font-weight:800;}
+  .stat-box .lbl{font-size:12px;color:var(--sub);margin-top:2px;}
+  .chart-wrap{
+    margin:16px 20px;background:var(--card);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px 16px;
+  }
+  .chart-wrap h3{font-size:15px;font-weight:800;margin-bottom:12px;}
+
+  /* HISTORIAL */
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 4px;}
+  .cal-nav h3{font-size:17px;font-weight:800;}
+  .cal-grid{
+    display:grid;grid-template-columns:repeat(7,1fr);gap:6px;
+    padding:14px 20px;
+  }
+  .cal-dow{font-size:11px;color:var(--sub);text-align:center;font-weight:700;}
+  .cal-day{
+    aspect-ratio:1;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:600;cursor:pointer;
+    background:var(--bg);color:var(--text);
+    border:1.5px solid transparent;
+  }
+  .cal-day.done{background:var(--green);color:#fff;}
+  .cal-day.missed{background:#fdeceb;color:#d9483f;}
+  .cal-day.empty{visibility:hidden;}
+  .cal-day.today{border-color:var(--green-dark);}
+
+  /* AJUSTES */
+  .settings-group{margin:16px 20px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:6px 20px;}
+  .settings-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:14px 0;border-bottom:1px solid var(--border);
+    font-size:14px;
+  }
+  .settings-row:last-child{border-bottom:none;}
+  .settings-row .lbl{color:var(--sub);}
+  .settings-row .val{font-weight:700;}
+
+  .empty-state{text-align:center;color:var(--sub);font-size:13px;padding:30px 10px;}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============ VISTA: HOY ============ -->
+  <div class="view active" id="view-hoy">
+    <div class="topbar">
+      <button class="icon-btn" onclick="switchView('ajustes')">☰</button>
+      <div class="title-block">
+        <h1>Hoy</h1>
+        <p id="hoy-fecha"></p>
+      </div>
+      <button class="icon-btn" onclick="switchView('historial')">📅</button>
+    </div>
+
+    <div class="grid">
+      <div class="card calories">
+        <div class="card-head">
+          <div class="card-icon">🔥</div>
+          <div class="card-label">Calorías</div>
+        </div>
+        <div class="card-value"><span id="cal-val">0</span> <span class="unit">/ <span id="cal-goal">2200</span> kcal</span></div>
+        <div class="bar-track"><div class="bar-fill" id="cal-bar" style="width:0%"></div></div>
+        <div class="pct" id="cal-pct">0%</div>
+        <button class="card-action" onclick="openSheet('sheet-meal')">+ Agregar comida</button>
+      </div>
+
+      <div class="card weight">
+        <div class="card-head">
+          <div class="card-icon">⚖️</div>
+          <div class="card-label">Peso</div>
+        </div>
+        <div class="card-value"><span id="weight-val">--</span> <span class="unit">kg</span></div>
+        <div class="card-sub" id="weight-goal-sub">Objetivo: -- kg</div>
+        <button class="card-action" onclick="openSheet('sheet-weight')">Actualizar peso</button>
+      </div>
+
+      <div class="card water">
+        <div class="card-head">
+          <div class="card-icon">💧</div>
+          <div class="card-label">Agua</div>
+        </div>
+        <div class="card-value"><span id="water-val">0</span> <span class="unit">/ <span id="water-goal">3</span> L</span></div>
+        <div class="bar-track"><div class="bar-fill" id="water-bar" style="width:0%"></div></div>
+        <div class="pct" id="water-pct">0%</div>
+        <div class="quick-row">
+          <button class="chip-btn" onclick="addWater(0.25)">+250ml</button>
+          <button class="chip-btn" onclick="addWater(0.5)">+500ml</button>
+        </div>
+      </div>
+
+      <div class="card steps">
+        <div class="card-head">
+          <div class="card-icon">👟</div>
+          <div class="card-label">Pasos</div>
+        </div>
+        <div class="card-value"><span id="steps-val">0</span> <span class="unit">/ <span id="steps-goal">10000</span></span></div>
+        <div class="bar-track"><div class="bar-fill" id="steps-bar" style="width:0%"></div></div>
+        <div class="pct" id="steps-pct">0%</div>
+        <button class="card-action" onclick="openSheet('sheet-steps')">Editar pasos</button>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Mis hábitos de hoy</div>
+      <div id="habits-list"></div>
+    </div>
+
+    <button class="big-btn" id="main-btn" onclick="completeDay()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <span id="main-btn-text">HOY LO HICE</span>
+    </button>
+
+    <div class="streak-card">
+      <div class="streak-flame">🔥</div>
+      <div>
+        <div class="streak-num"><span id="streak-num">0</span> días</div>
+        <div class="streak-sub">¡Sigue así!</div>
+      </div>
+      <div class="week-days" id="week-days"></div>
+    </div>
+  </div>
+
+  <!-- ============ VISTA: PROGRESO ============ -->
+  <div class="view" id="view-progreso">
+    <div class="topbar">
+      <div></div>
+      <div class="title-block"><h1>Progreso</h1></div>
+      <div></div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="num" id="stat-streak">0</div><div class="lbl">Racha actual</div></div>
+      <div class="stat-box"><div class="num" id="stat-completed">0</div><div class="lbl">Días completados</div></div>
+      <div class="stat-box"><div class="num" id="stat-avgcal">0</div><div class="lbl">Promedio calorías</div></div>
+      <div class="stat-box"><div class="num" id="stat-avgwater">0</div><div class="lbl">Promedio agua (L)</div></div>
+      <div class="stat-box"><div class="num" id="stat-avgsteps">0</div><div class="lbl">Promedio pasos</div></div>
+      <div class="stat-box"><div class="num" id="stat-lost">0</div><div class="lbl">Kg perdidos</div></div>
+    </div>
+    <div class="chart-wrap">
+      <h3>Evolución del peso</h3>
+      <svg id="weight-chart" width="100%" height="140" viewBox="0 0 300 140" preserveAspectRatio="none"></svg>
+    </div>
+  </div>
+
+  <!-- ============ VISTA: HISTORIAL ============ -->
+  <div class="view" id="view-historial">
+    <div class="topbar">
+      <div></div>
+      <div class="title-block"><h1>Historial</h1></div>
+      <div></div>
+    </div>
+    <div class="cal-nav">
+      <button class="icon-btn" onclick="changeMonth(-1)">‹</button>
+      <h3 id="cal-month-label"></h3>
+      <button class="icon-btn" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+
+  <!-- ============ VISTA: AJUSTES ============ -->
+  <div class="view" id="view-ajustes">
+    <div class="topbar">
+      <div></div>
+      <div class="title-block"><h1>Ajustes</h1></div>
+      <div></div>
+    </div>
+    <div class="settings-group" id="settings-summary"></div>
+    <div style="padding:0 20px;">
+      <button class="btn btn-secondary" onclick="openOnboarding(true)">Editar mis datos</button>
+      <button class="btn btn-danger" onclick="resetAll()">Borrar todos los datos</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="nav-btn active" data-view="hoy" onclick="switchView('hoy')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>
+        Hoy
+      </button>
+      <button class="nav-btn" data-view="progreso" onclick="switchView('progreso')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10"/><path d="M12 20V4"/><path d="M20 20v-7"/></svg>
+        Progreso
+      </button>
+      <button class="nav-btn" data-view="historial" onclick="switchView('historial')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        Historial
+      </button>
+      <button class="nav-btn" data-view="ajustes" onclick="switchView('ajustes')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Ajustes
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- SHEET: Onboarding -->
+<div class="overlay" id="overlay-onboarding">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Configura tu perfil</h2>
+    <div class="field"><label>Nombre</label><input type="text" id="ob-name" placeholder="Tu nombre"></div>
+    <div class="field-row">
+      <div class="field"><label>Edad</label><input type="number" id="ob-age" placeholder="30"></div>
+      <div class="field"><label>Sexo</label>
+        <select id="ob-sex"><option value="">--</option><option value="M">Masculino</option><option value="F">Femenino</option><option value="O">Otro</option></select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Altura (cm)</label><input type="number" id="ob-height" placeholder="170"></div>
+      <div class="field"><label>Fecha objetivo</label><input type="date" id="ob-date"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Peso actual (kg)</label><input type="number" step="0.1" id="ob-weight" placeholder="110"></div>
+      <div class="field"><label>Peso objetivo (kg)</label><input type="number" step="0.1" id="ob-weight-goal" placeholder="90"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Calorías diarias</label><input type="number" id="ob-cal" placeholder="2200"></div>
+      <div class="field"><label>Litros de agua</label><input type="number" step="0.1" id="ob-water" placeholder="3"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Proteínas (g)</label><input type="number" id="ob-prot" placeholder="150"></div>
+      <div class="field"><label>Carbohidratos (g)</label><input type="number" id="ob-carb" placeholder="200"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Grasas (g)</label><input type="number" id="ob-fat" placeholder="60"></div>
+      <div class="field"><label>Pasos diarios</label><input type="number" id="ob-steps" placeholder="10000"></div>
+    </div>
+    <button class="btn btn-primary" onclick="saveOnboarding()">Guardar y comenzar</button>
+  </div>
+</div>
+
+<!-- SHEET: Comida -->
+<div class="overlay" id="overlay-sheet-meal">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Registrar comida</h2>
+    <div class="meal-list" id="meal-list"></div>
+    <div class="field"><label>Comida (ej. Desayuno)</label><input type="text" id="meal-name" placeholder="Desayuno"></div>
+    <div class="field"><label>Calorías</label><input type="number" id="meal-kcal" placeholder="520"></div>
+    <button class="btn btn-primary" onclick="addMeal()">Guardar</button>
+    <button class="btn btn-secondary" onclick="closeSheet('sheet-meal')">Después</button>
+  </div>
+</div>
+
+<!-- SHEET: Peso -->
+<div class="overlay" id="overlay-sheet-weight">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Peso</h2>
+    <div class="field"><input type="number" step="0.1" id="weight-input" placeholder="109.4"></div>
+    <button class="btn btn-primary" onclick="saveWeight()">Guardar</button>
+  </div>
+</div>
+
+<!-- SHEET: Pasos -->
+<div class="overlay" id="overlay-sheet-steps">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Pasos de hoy</h2>
+    <div class="field"><input type="number" id="steps-input" placeholder="5400"></div>
+    <button class="btn btn-primary" onclick="saveSteps()">Guardar</button>
+  </div>
+</div>
+
+<!-- SHEET: Detalle día (historial) -->
+<div class="overlay" id="overlay-sheet-day">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2 id="day-detail-title">Día</h2>
+    <div id="day-detail-body"></div>
+    <button class="btn btn-secondary" onclick="closeSheet('sheet-day')">Cerrar</button>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-overlay" id="success-overlay">
+  <div class="success-check">
+    <svg viewBox="0 0 24 24" width="46" height="46" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  </div>
+  <h2>¡Día completado!</h2>
+  <p id="success-sub">Racha: 1 día</p>
+</div>
+
+<script>
+/* ============ ESTADO Y PERSISTENCIA ============ */
+const STORE_KEY = 'controlDiario_v1';
+
+function loadStore(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { profile:null, days:{} };
+}
+function saveStore(){
+  localStorage.setItem(STORE_KEY, JSON.stringify(store));
+}
+let store = loadStore();
+
+const HABIT_DEFS = [
+  {key:'calorias', name:'Cumplí mis calorías', icon:'🍽️', color:'#4caf50'},
+  {key:'entrene', name:'Entrené', icon:'🏋️', color:'#f5871f'},
+  {key:'agua', name:'Tomé toda el agua', icon:'💧', color:'#2f8fe0'},
+  {key:'pasos', name:'Caminé los pasos', icon:'🚶', color:'#4caf50'},
+  {key:'sueno', name:'Dormí 8 horas', icon:'🌙', color:'#7c5cff'},
+];
+
+function todayKey(d){
+  d = d || new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function fmtFecha(d){
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return d.getDate()+' de '+meses[d.getMonth()];
+}
+function emptyDay(){
+  return { weight:null, calories:0, meals:[], water:0, steps:0, habits:{}, completed:false };
+}
+function getDay(key){
+  if(!store.days[key]) store.days[key] = emptyDay();
+  return store.days[key];
+}
+function currentDayKey(){ return todayKey(); }
+
+/* ============ NAVEGACIÓN ============ */
+function switchView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===name));
+  if(name==='progreso') renderProgreso();
+  if(name==='historial') renderCalendar();
+  if(name==='ajustes') renderAjustes();
+}
+
+function openSheet(id){
+  if(id==='sheet-meal') renderMealList();
+  document.getElementById('overlay-'+id).classList.add('active');
+}
+function closeSheet(id){
+  document.getElementById('overlay-'+id).classList.remove('active');
+}
+
+/* ============ ONBOARDING ============ */
+function openOnboarding(editing){
+  if(editing && store.profile){
+    const p = store.profile;
+    document.getElementById('ob-name').value = p.name||'';
+    document.getElementById('ob-age').value = p.age||'';
+    document.getElementById('ob-sex').value = p.sex||'';
+    document.getElementById('ob-height').value = p.height||'';
+    document.getElementById('ob-date').value = p.targetDate||'';
+    document.getElementById('ob-weight').value = p.startWeight||'';
+    document.getElementById('ob-weight-goal').value = p.weightGoal||'';
+    document.getElementById('ob-cal').value = p.calGoal||'';
+    document.getElementById('ob-water').value = p.waterGoal||'';
+    document.getElementById('ob-prot').value = p.protGoal||'';
+    document.getElementById('ob-carb').value = p.carbGoal||'';
+    document.getElementById('ob-fat').value = p.fatGoal||'';
+    document.getElementById('ob-steps').value = p.stepsGoal||'';
+  }
+  document.getElementById('overlay-onboarding').classList.add('active');
+}
+function saveOnboarding(){
+  const name = document.getElementById('ob-name').value.trim();
+  const weight = parseFloat(document.getElementById('ob-weight').value) || 0;
+  const profile = {
+    name: name,
+    age: document.getElementById('ob-age').value,
+    sex: document.getElementById('ob-sex').value,
+    height: document.getElementById('ob-height').value,
+    targetDate: document.getElementById('ob-date').value,
+    startWeight: weight,
+    weightGoal: parseFloat(document.getElementById('ob-weight-goal').value) || 0,
+    calGoal: parseInt(document.getElementById('ob-cal').value) || 2200,
+    waterGoal: parseFloat(document.getElementById('ob-water').value) || 3,
+    protGoal: document.getElementById('ob-prot').value,
+    carbGoal: document.getElementById('ob-carb').value,
+    fatGoal: document.getElementById('ob-fat').value,
+    stepsGoal: parseInt(document.getElementById('ob-steps').value) || 10000,
+  };
+  store.profile = profile;
+  const key = currentDayKey();
+  const day = getDay(key);
+  if(!day.weight && weight) day.weight = weight;
+  saveStore();
+  document.getElementById('overlay-onboarding').classList.remove('active');
+  renderAll();
+}
+
+/* ============ RENDER: HOY ============ */
+function renderHoy(){
+  const now = new Date();
+  document.getElementById('hoy-fecha').textContent = fmtFecha(now);
+  const p = store.profile;
+  const key = currentDayKey();
+  const day = getDay(key);
+
+  const calGoal = p ? p.calGoal : 2200;
+  const waterGoal = p ? p.waterGoal : 3;
+  const stepsGoal = p ? p.stepsGoal : 10000;
+  const weightGoal = p ? p.weightGoal : null;
+
+  document.getElementById('cal-goal').textContent = calGoal;
+  document.getElementById('water-goal').textContent = waterGoal;
+  document.getElementById('steps-goal').textContent = stepsGoal.toLocaleString('es');
+
+  document.getElementById('cal-val').textContent = day.calories;
+  const calPct = Math.min(100, Math.round((day.calories/calGoal)*100)) || 0;
+  document.getElementById('cal-bar').style.width = calPct+'%';
+  document.getElementById('cal-pct').textContent = calPct+'%';
+
+  document.getElementById('water-val').textContent = day.water;
+  const waterPct = Math.min(100, Math.round((day.water/waterGoal)*100)) || 0;
+  document.getElementById('water-bar').style.width = waterPct+'%';
+  document.getElementById('water-pct').textContent = waterPct+'%';
+
+  document.getElementById('steps-val').textContent = day.steps.toLocaleString('es');
+  const stepsPct = Math.min(100, Math.round((day.steps/stepsGoal)*100)) || 0;
+  document.getElementById('steps-bar').style.width = stepsPct+'%';
+  document.getElementById('steps-pct').textContent = stepsPct+'%';
+
+  const lastWeight = getLatestWeight();
+  document.getElementById('weight-val').textContent = lastWeight!==null ? lastWeight : '--';
+  if(weightGoal){
+    const falta = lastWeight!==null ? Math.max(0, (lastWeight-weightGoal)).toFixed(1) : '--';
+    document.getElementById('weight-goal-sub').textContent = `Objetivo: ${weightGoal} kg · Faltan ${falta} kg`;
+  }
+
+  const list = document.getElementById('habits-list');
+  list.innerHTML = '';
+  HABIT_DEFS.forEach(h=>{
+    const checked = !!day.habits[h.key];
+    const row = document.createElement('div');
+    row.className = 'habit-row';
+    row.onclick = ()=> toggleHabit(h.key);
+    row.innerHTML = `
+      <div class="habit-icon" style="background:${h.color}">${h.icon}</div>
+      <div class="habit-name">${h.name}</div>
+      <div class="checkbox ${checked?'checked':''}">${checked? '✓' : ''}</div>
+    `;
+    list.appendChild(row);
+  });
+
+  const btn = document.getElementById('main-btn');
+  const btnText = document.getElementById('main-btn-text');
+  btn.classList.toggle('done', day.completed);
+  btnText.textContent = day.completed ? 'DÍA COMPLETADO' : 'HOY LO HICE';
+
+  renderStreakCard();
+}
+
+function getLatestWeight(){
+  const keys = Object.keys(store.days).sort();
+  for(let i=keys.length-1;i>=0;i--){
+    if(store.days[keys[i]].weight!=null) return store.days[keys[i]].weight;
+  }
+  return store.profile ? (store.profile.startWeight || null) : null;
+}
+
+function toggleHabit(key){
+  const day = getDay(currentDayKey());
+  day.habits[key] = !day.habits[key];
+  saveStore();
+  renderHoy();
+}
+
+function addWater(amount){
+  const day = getDay(currentDayKey());
+  day.water = Math.round((day.water + amount)*100)/100;
+  saveStore();
+  renderHoy();
+}
+
+/* Comidas */
+function renderMealList(){
+  const day = getDay(currentDayKey());
+  const el = document.getElementById('meal-list');
+  if(!day.meals.length){
+    el.innerHTML = '<div class="empty-state">Todavía no agregaste comidas hoy</div>';
+    return;
+  }
+  el.innerHTML = day.meals.map((m,i)=>`
+    <div class="meal-item">
+      <span>${m.name}</span>
+      <span><span class="k">${m.kcal} kcal</span> <button class="meal-del" onclick="deleteMeal(${i})">✕</button></span>
+    </div>
+  `).join('');
+}
+function addMeal(){
+  const name = document.getElementById('meal-name').value.trim() || 'Comida';
+  const kcal = parseInt(document.getElementById('meal-kcal').value) || 0;
+  if(kcal<=0) return;
+  const day = getDay(currentDayKey());
+  day.meals.push({name, kcal});
+  day.calories += kcal;
+  saveStore();
+  document.getElementById('meal-name').value='';
+  document.getElementById('meal-kcal').value='';
+  renderMealList();
+  renderHoy();
+}
+function deleteMeal(i){
+  const day = getDay(currentDayKey());
+  const m = day.meals[i];
+  day.calories -= m.kcal;
+  day.meals.splice(i,1);
+  saveStore();
+  renderMealList();
+  renderHoy();
+}
+
+/* Peso */
+function saveWeight(){
+  const val = parseFloat(document.getElementById('weight-input').value);
+  if(!val) return;
+  const day = getDay(currentDayKey());
+  day.weight = val;
+  saveStore();
+  document.getElementById('weight-input').value='';
+  closeSheet('sheet-weight');
+  renderHoy();
+}
+
+/* Pasos */
+function saveSteps(){
+  const val = parseInt(document.getElementById('steps-input').value);
+  if(isNaN(val)) return;
+  const day = getDay(currentDayKey());
+  day.steps = val;
+  saveStore();
+  document.getElementById('steps-input').value='';
+  closeSheet('sheet-steps');
+  renderHoy();
+}
+
+/* ============ RACHA ============ */
+function computeStreak(){
+  let streak = 0;
+  let d = new Date();
+  while(true){
+    const key = todayKey(d);
+    const day = store.days[key];
+    if(day && day.completed){
+      streak++;
+      d.setDate(d.getDate()-1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function renderStreakCard(){
+  const streak = computeStreak();
+  document.getElementById('streak-num').textContent = streak;
+  const wrap = document.getElementById('week-days');
+  wrap.innerHTML = '';
+  const labels = ['D','L','M','M','J','V','S'];
+  const now = new Date();
+  const startOfWeek = new Date(now);
+  const dow = now.getDay();
+  startOfWeek.setDate(now.getDate()-dow);
+  for(let i=0;i<7;i++){
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate()+i);
+    const key = todayKey(d);
+    const day = store.days[key];
+    const on = day && day.completed;
+    const dot = document.createElement('div');
+    dot.className = 'day-dot'+(on?' on':'');
+    dot.textContent = labels[d.getDay()];
+    wrap.appendChild(dot);
+  }
+}
+
+/* ============ COMPLETAR DÍA ============ */
+function completeDay(){
+  const day = getDay(currentDayKey());
+  if(day.completed) return;
+  day.completed = true;
+  saveStore();
+  renderHoy();
+  const streak = computeStreak();
+  document.getElementById('success-sub').textContent = `Racha: ${streak} ${streak===1?'día':'días'}`;
+  const ov = document.getElementById('success-overlay');
+  ov.classList.add('active');
+  setTimeout(()=> ov.classList.remove('active'), 1400);
+}
+
+/* ============ PROGRESO ============ */
+function renderProgreso(){
+  const streak = computeStreak();
+  document.getElementById('stat-streak').textContent = streak;
+  const keys = Object.keys(store.days).sort();
+  const completedDays = keys.filter(k=>store.days[k].completed);
+  document.getElementById('stat-completed').textContent = completedDays.length;
+
+  const withCal = keys.filter(k=>store.days[k].calories>0);
+  const avgCal = withCal.length ? Math.round(withCal.reduce((s,k)=>s+store.days[k].calories,0)/withCal.length) : 0;
+  document.getElementById('stat-avgcal').textContent = avgCal;
+
+  const withWater = keys.filter(k=>store.days[k].water>0);
+  const avgWater = withWater.length ? (withWater.reduce((s,k)=>s+store.days[k].water,0)/withWater.length).toFixed(1) : 0;
+  document.getElementById('stat-avgwater').textContent = avgWater;
+
+  const withSteps = keys.filter(k=>store.days[k].steps>0);
+  const avgSteps = withSteps.length ? Math.round(withSteps.reduce((s,k)=>s+store.days[k].steps,0)/withSteps.length) : 0;
+  document.getElementById('stat-avgsteps').textContent = avgSteps.toLocaleString('es');
+
+  const weights = keys.filter(k=>store.days[k].weight!=null).map(k=>({key:k,w:store.days[k].weight}));
+  let lost = 0;
+  if(store.profile && store.profile.startWeight && weights.length){
+    lost = Math.max(0, (store.profile.startWeight - weights[weights.length-1].w)).toFixed(1);
+  }
+  document.getElementById('stat-lost').textContent = lost;
+
+  drawWeightChart(weights);
+}
+
+function drawWeightChart(weights){
+  const svg = document.getElementById('weight-chart');
+  svg.innerHTML = '';
+  if(weights.length < 2){
+    svg.innerHTML = `<text x="150" y="70" text-anchor="middle" fill="#8a8f98" font-size="12">Registra tu peso para ver el gráfico</text>`;
+    return;
+  }
+  const w = 300, h = 140, pad=16;
+  const values = weights.map(p=>p.w);
+  const min = Math.min(...values), max = Math.max(...values);
+  const range = (max-min) || 1;
+  const stepX = (w-pad*2)/(weights.length-1);
+  const points = weights.map((p,i)=>{
+    const x = pad + i*stepX;
+    const y = h-pad - ((p.w-min)/range)*(h-pad*2);
+    return [x,y];
+  });
+  const pathD = points.map((p,i)=> (i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const areaD = pathD + ` L${points[points.length-1][0]},${h-pad} L${points[0][0]},${h-pad} Z`;
+
+  const ns = 'http://www.w3.org/2000/svg';
+  const areaPath = document.createElementNS(ns,'path');
+  areaPath.setAttribute('d', areaD);
+  areaPath.setAttribute('fill', '#4caf5022');
+  svg.appendChild(areaPath);
+
+  const linePath = document.createElementNS(ns,'path');
+  linePath.setAttribute('d', pathD);
+  linePath.setAttribute('fill','none');
+  linePath.setAttribute('stroke','#4caf50');
+  linePath.setAttribute('stroke-width','2.5');
+  linePath.setAttribute('stroke-linecap','round');
+  linePath.setAttribute('stroke-linejoin','round');
+  svg.appendChild(linePath);
+
+  points.forEach(p=>{
+    const c = document.createElementNS(ns,'circle');
+    c.setAttribute('cx',p[0]); c.setAttribute('cy',p[1]); c.setAttribute('r',3);
+    c.setAttribute('fill','#3d8b40');
+    svg.appendChild(c);
+  });
+}
+
+/* ============ HISTORIAL ============ */
+let calState = new Date();
+function changeMonth(delta){
+  calState.setMonth(calState.getMonth()+delta);
+  renderCalendar();
+}
+function renderCalendar(){
+  const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-month-label').textContent = meses[calState.getMonth()]+' '+calState.getFullYear();
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+  ['D','L','M','M','J','V','S'].forEach(l=>{
+    const el = document.createElement('div');
+    el.className='cal-dow'; el.textContent=l;
+    grid.appendChild(el);
+  });
+  const year = calState.getFullYear(), month = calState.getMonth();
+  const firstDow = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const todayStr = todayKey();
+
+  for(let i=0;i<firstDow;i++){
+    const e = document.createElement('div');
+    e.className='cal-day empty';
+    grid.appendChild(e);
+  }
+  for(let d=1; d<=daysInMonth; d++){
+    const dateObj = new Date(year, month, d);
+    const key = todayKey(dateObj);
+    const day = store.days[key];
+    const el = document.createElement('div');
+    let cls = 'cal-day';
+    if(day && day.completed) cls += ' done';
+    else if(dateObj < new Date(new Date().setHours(0,0,0,0)) && day) cls += ' missed';
+    if(key===todayStr) cls += ' today';
+    el.className = cls;
+    el.textContent = d;
+    el.onclick = ()=> showDayDetail(key);
+    grid.appendChild(el);
+  }
+}
+function showDayDetail(key){
+  const day = store.days[key];
+  document.getElementById('day-detail-title').textContent = key;
+  const body = document.getElementById('day-detail-body');
+  if(!day){
+    body.innerHTML = '<div class="empty-state">Sin datos para este día</div>';
+  } else {
+    const habitsDone = HABIT_DEFS.filter(h=>day.habits[h.key]).map(h=>h.name);
+    body.innerHTML = `
+      <div class="settings-row"><span class="lbl">Peso</span><span class="val">${day.weight ?? '--'} kg</span></div>
+      <div class="settings-row"><span class="lbl">Calorías</span><span class="val">${day.calories} kcal</span></div>
+      <div class="settings-row"><span class="lbl">Agua</span><span class="val">${day.water} L</span></div>
+      <div class="settings-row"><span class="lbl">Pasos</span><span class="val">${day.steps}</span></div>
+      <div class="settings-row"><span class="lbl">Estado</span><span class="val">${day.completed?'✅ Completado':'—'}</span></div>
+      <div style="margin-top:10px;font-size:13px;color:var(--sub);font-weight:700;">Hábitos cumplidos</div>
+      <div style="margin-top:6px;font-size:14px;">${habitsDone.length? habitsDone.join(', ') : 'Ninguno'}</div>
+    `;
+  }
+  openSheet('sheet-day');
+}
+
+/* ============ AJUSTES ============ */
+function renderAjustes(){
+  const p = store.profile || {};
+  const el = document.getElementById('settings-summary');
+  el.innerHTML = `
+    <div class="settings-row"><span class="lbl">Nombre</span><span class="val">${p.name||'--'}</span></div>
+    <div class="settings-row"><span class="lbl">Edad</span><span class="val">${p.age||'--'}</span></div>
+    <div class="settings-row"><span class="lbl">Altura</span><span class="val">${p.height? p.height+' cm':'--'}</span></div>
+    <div class="settings-row"><span class="lbl">Peso objetivo</span><span class="val">${p.weightGoal||'--'} kg</span></div>
+    <div class="settings-row"><span class="lbl">Calorías diarias</span><span class="val">${p.calGoal||'--'} kcal</span></div>
+    <div class="settings-row"><span class="lbl">Agua diaria</span><span class="val">${p.waterGoal||'--'} L</span></div>
+    <div class="settings-row"><span class="lbl">Pasos diarios</span><span class="val">${p.stepsGoal||'--'}</span></div>
+  `;
+}
+function resetAll(){
+  if(!confirm('¿Seguro que querés borrar todos tus datos? Esta acción no se puede deshacer.')) return;
+  localStorage.removeItem(STORE_KEY);
+  store = { profile:null, days:{} };
+  location.reload();
+}
+
+/* ============ INIT ============ */
+function renderAll(){
+  renderHoy();
+}
+window.addEventListener('DOMContentLoaded', ()=>{
+  if(!store.profile){
+    openOnboarding(false);
+  }
+  renderAll();
+});
+</script>
+</body>
+</html>
